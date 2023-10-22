@@ -6,6 +6,8 @@ from translate import Translator
 Token: Final = '6571411673:AAEsrOjiRI-MQQxoGvx-3D2c0mqCp4lW62o'
 Bot_username: Final = 'https://t.me/Translator_pe_bot'
 
+lang = ""
+
 
 async def select_language(update: Update, context: CallbackContext):
     keyboard = [
@@ -18,7 +20,7 @@ async def select_language(update: Update, context: CallbackContext):
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text("select your language", reply_markup=reply_markup)
 
-lang = ""
+
 
 
 async def button_menu(update: Update, context: CallbackContext):
@@ -27,6 +29,7 @@ async def button_menu(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
     await query.edit_message_text(text=f'{query.data} selected for translate')
+    return query.data
 
 
 def translat(input):
@@ -35,14 +38,21 @@ def translat(input):
     return translation
 
 
-async def reply(updat: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_input = updat.message.text
-    await updat.message.reply_text(translat(user_input))
+async def reply_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.chat.type == "group":
+        MessageHandler(select_language)
+        data = CallbackQueryHandler(button_menu)
+        await update.message.reply_text(translat(data))
+    else :
+        return
 
 
-async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    print(f'Update {update} causded error {context.error}')
+async def reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_input = update.message.text
+    await update.message.reply_text(translat(user_input))
 
+def error(update, context):
+    print(f"Update {update} caused error {context.error}")
 
 if __name__ == '__main__':
     app = Application.builder().token(Token).build()
